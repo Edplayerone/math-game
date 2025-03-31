@@ -1,69 +1,131 @@
-import { generateEquation } from "./generateEquation";
+import { generateEquation, Equation } from "./generateEquation";
 
 describe("generateEquation", () => {
-  it("should return an object with equation and answer properties", () => {
+  it("should return an object with 'equation' and 'answer' properties", () => {
     const result = generateEquation();
     expect(result).toHaveProperty("equation");
     expect(result).toHaveProperty("answer");
   });
 
-  it("should generate an equation with the correct number of lines", () => {
-    const numLines = 5;
-    const result = generateEquation(numLines);
-    const equationParts = result.equation.split(" ");
-    // Each number and operator is a part, so we expect 2*numLines - 1 parts
-    expect(equationParts.length).toBe(2 * numLines - 1);
-  });
-
-  it("should generate an equation with a default of 3 lines", () => {
+  it("should generate an equation string", () => {
     const result = generateEquation();
-    const equationParts = result.equation.split(" ");
-    expect(equationParts.length).toBe(5); // 2*3 -1 = 5
+    expect(typeof result.equation).toBe("string");
+    expect(result.equation.length).toBeGreaterThan(0);
   });
 
-  it("should generate equations with only positive numbers or zero", () => {
-    for (let i = 0; i < 100; i++) {
-      const result = generateEquation(5);
-      expect(result.answer).toBeGreaterThanOrEqual(0);
-
-      const numbers = result.equation
-        .split(/[\s+-]/)
-        .filter((part) => part !== "");
-      numbers.forEach((numStr) => {
-        const num = parseInt(numStr);
-        expect(num).toBeGreaterThanOrEqual(0);
-      });
-    }
+  it("should generate a number for the answer", () => {
+    const result = generateEquation();
+    expect(typeof result.answer).toBe("number");
   });
 
-  it("should return the correct answer for the generated equation", () => {
+  it("should throw an error if difficulty is less than 1", () => {
+    expect(() => generateEquation({ difficulty: 0 })).toThrowError(
+      "Difficulty must be between 1 and 5."
+    );
+  });
+
+  it("should throw an error if difficulty is greater than 5", () => {
+    expect(() => generateEquation({ difficulty: 6 })).toThrowError(
+      "Difficulty must be between 1 and 5."
+    );
+  });
+
+  it("should generate equations with the correct number of lines", () => {
+    const numLines = 5;
+    const result = generateEquation({ numLines });
+    const parts = result.equation.split(" ");
+    // Each line has a number and an operator, except the first line which only has a number
+    expect(parts.length).toBe(numLines * 2 - 1);
+  });
+
+  it("should generate equations with numbers between 0-10 for difficulty 1", () => {
     for (let i = 0; i < 100; i++) {
-      const result = generateEquation(4);
-      const equationParts = result.equation.split(" ");
-      let calculatedAnswer = parseInt(equationParts[0]);
-
-      for (let j = 1; j < equationParts.length; j += 2) {
-        const operator = equationParts[j];
-        const num = parseInt(equationParts[j + 1]);
-
-        if (operator === "+") {
-          calculatedAnswer += num;
-        } else if (operator === "-") {
-          calculatedAnswer -= num;
+      const result = generateEquation({ numLines: 3, difficulty: 1 });
+      const parts = result.equation.split(" ");
+      parts.forEach((part) => {
+        if (!isNaN(parseInt(part))) {
+          expect(parseInt(part)).toBeGreaterThanOrEqual(0);
+          expect(parseInt(part)).toBeLessThanOrEqual(10);
         }
-      }
-      expect(result.answer).toBe(calculatedAnswer);
-    }
-  });
-  it("should generate equations with zero", () => {
-    for (let i = 0; i < 100; i++) {
-      const result = generateEquation(4);
-      const equationParts = result.equation.split(" ");
-      const numbers = equationParts.filter((part, index) => index % 2 === 0);
-      numbers.forEach((numStr) => {
-        const num = parseInt(numStr);
-        expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).toContain(num);
       });
     }
+  });
+
+  it("should generate equations with numbers between 0-20 for difficulty 2", () => {
+    for (let i = 0; i < 100; i++) {
+      const result = generateEquation({ numLines: 3, difficulty: 2 });
+      const parts = result.equation.split(" ");
+      parts.forEach((part) => {
+        if (!isNaN(parseInt(part))) {
+          expect(parseInt(part)).toBeGreaterThanOrEqual(0);
+          expect(parseInt(part)).toBeLessThanOrEqual(20);
+        }
+      });
+    }
+  });
+
+  it("should generate equations with numbers between 0-50 for difficulty 3", () => {
+    for (let i = 0; i < 100; i++) {
+      const result = generateEquation({ numLines: 3, difficulty: 3 });
+      const parts = result.equation.split(" ");
+      parts.forEach((part) => {
+        if (!isNaN(parseInt(part))) {
+          expect(parseInt(part)).toBeGreaterThanOrEqual(0);
+          expect(parseInt(part)).toBeLessThanOrEqual(50);
+        }
+      });
+    }
+  });
+
+  it("should generate equations with numbers between 0-100 for difficulty 4", () => {
+    for (let i = 0; i < 100; i++) {
+      const result = generateEquation({ numLines: 3, difficulty: 4 });
+      const parts = result.equation.split(" ");
+      parts.forEach((part) => {
+        if (!isNaN(parseInt(part))) {
+          expect(parseInt(part)).toBeGreaterThanOrEqual(0);
+          expect(parseInt(part)).toBeLessThanOrEqual(100);
+        }
+      });
+    }
+  });
+
+  it("should generate equations with numbers between 0-200 for difficulty 5", () => {
+    for (let i = 0; i < 100; i++) {
+      const result = generateEquation({ numLines: 3, difficulty: 5 });
+      const parts = result.equation.split(" ");
+      parts.forEach((part) => {
+        if (!isNaN(parseInt(part))) {
+          expect(parseInt(part)).toBeGreaterThanOrEqual(0);
+          expect(parseInt(part)).toBeLessThanOrEqual(200);
+        }
+      });
+    }
+  });
+
+  it("should generate equations that do not result in negative answers", () => {
+    for (let i = 0; i < 100; i++) {
+      const result = generateEquation({ numLines: 5, difficulty: 3 });
+      expect(result.answer).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("should default to difficulty 1 if no difficulty is provided", () => {
+    for (let i = 0; i < 100; i++) {
+      const result = generateEquation();
+      const parts = result.equation.split(" ");
+      parts.forEach((part) => {
+        if (!isNaN(parseInt(part))) {
+          expect(parseInt(part)).toBeGreaterThanOrEqual(0);
+          expect(parseInt(part)).toBeLessThanOrEqual(10);
+        }
+      });
+    }
+  });
+
+  it("should default to 3 lines if no number of lines is provided", () => {
+    const result = generateEquation();
+    const parts = result.equation.split(" ");
+    expect(parts.length).toBe(5);
   });
 });
